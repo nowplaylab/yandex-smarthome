@@ -9,7 +9,7 @@ Made by [nowplaylab](https://github.com/nowplaylab) for [NowPlaying](https://git
 ## Install
 
 ```
-pip install git+https://github.com/nowplaylab/yandex-smarthome@v0.1.0
+pip install yandex-smarthome
 ```
 
 Python 3.9+. You need your own app at [oauth.yandex.ru/client/new](https://oauth.yandex.ru/client/new) with the **iot:view** and **iot:control** scopes. Its client secret is required for the code sign-in.

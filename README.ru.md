@@ -9,7 +9,7 @@
 ## Установка
 
 ```
-pip install git+https://github.com/nowplaylab/yandex-smarthome@v0.1.0
+pip install yandex-smarthome
 ```
 
 Python 3.9+. Нужно своё приложение на [oauth.yandex.ru/client/new](https://oauth.yandex.ru/client/new) с правами **iot:view** и **iot:control**. Для входа по коду обязателен его секрет (client secret).
