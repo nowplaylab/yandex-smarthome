@@ -1,6 +1,6 @@
 # yandex-smarthome
 
-**English** | [Русский](README.ru.md)
+**English** | [Русский](https://github.com/nowplaylab/yandex-smarthome/blob/main/README.ru.md)
 
 Yandex Smart Home (Alice) from Python: **sign in with a code** — the user types it on Yandex's page, your program never sees the password — and control lights: colour, white temperature, brightness, on/off, with a snapshot to put everything back as it was.
 

@@ -15,6 +15,7 @@ classifiers = ["Programming Language :: Python :: 3", "License :: OSI Approved :
 
 [project.urls]
 Homepage = "https://github.com/nowplaylab/yandex-smarthome"
+Issues = "https://github.com/nowplaylab/yandex-smarthome/issues"
 
 [tool.setuptools]
 packages = ["yandex_smarthome"]
