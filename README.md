@@ -30,12 +30,14 @@ async def main():
         home = SmartHome(token.access)
         lights = await home.lights(http)              # [Light(id, name, room, model, tmin, tmax, brightness, state)]
         before = {l.id: l.state for l in lights}      # to restore later
-        await home.actions(http, {l.id: light_actions(l, hsv=(30, 0.9), kelvin=2700, brightness=80) for l in lights})
+        failed = await home.actions(http, {l.id: light_actions(l, hsv=(30, 0.9), kelvin=2700, brightness=80) for l in lights})
+        print(failed)                                 # {device_id: 'DEVICE_UNREACHABLE', ...}, empty if all lamps obeyed
         ...
         await home.actions(http, before)              # back as it was
 ```
 
 - `light_actions()` sends colour in the lamp's own format (`hsv` or `rgb`); a white-only lamp gets `kelvin`, clamped to its range.
+- `actions()` returns the lamps that did not obey, with Yandex's error code. Yandex answers "ok" to the whole request even when a lamp is unplugged or offline, so check this.
 - `SmartHome` raises `AuthError` when the token stops working: call `login.refresh(http, token.refresh)` or sign in again.
 - Yandex drives lamps through its cloud, so a change takes about half a second to a second, and frequent commands are not welcome. One change per event (a new track, say) works well; flashing to the beat does not.
 

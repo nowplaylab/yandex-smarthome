@@ -30,12 +30,14 @@ async def main():
         home = SmartHome(token.access)
         lights = await home.lights(http)              # [Light(id, name, room, model, tmin, tmax, brightness, state)]
         before = {l.id: l.state for l in lights}      # чтобы вернуть потом
-        await home.actions(http, {l.id: light_actions(l, hsv=(30, 0.9), kelvin=2700, brightness=80) for l in lights})
+        failed = await home.actions(http, {l.id: light_actions(l, hsv=(30, 0.9), kelvin=2700, brightness=80) for l in lights})
+        print(failed)                                 # {device_id: 'DEVICE_UNREACHABLE', ...}, пусто, если все лампы послушались
         ...
         await home.actions(http, before)              # как было
 ```
 
 - `light_actions()` отдаёт цвет в формате самой лампы (`hsv` или `rgb`); лампа только с белым получает `kelvin` в пределах своего диапазона.
+- `actions()` возвращает лампы, которые не послушались, с кодом ошибки Яндекса. Яндекс отвечает «ok» на весь запрос, даже когда лампа обесточена или без сети, поэтому смотрите сюда.
 - `SmartHome` бросает `AuthError`, когда вход перестал действовать: вызовите `login.refresh(http, token.refresh)` или войдите заново.
 - Лампами Яндекс управляет через облако: изменение доходит за полсекунды–секунду, частые команды он не любит. Одно изменение на событие (например, на новый трек) — хорошо; мигание в такт — нет.
 

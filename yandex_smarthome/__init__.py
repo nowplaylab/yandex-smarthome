@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 
 import aiohttp
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 __all__ = ['YandexError', 'AuthError', 'LoginError', 'LoginCode', 'Token', 'DeviceLogin',
            'Light', 'SmartHome', 'light_actions']
 
@@ -99,16 +99,18 @@ class DeviceLogin:
         if d.get('access_token'):
             return self._token(d)
         err = d.get('error')
-        if err in ('authorization_pending', 'slow_down'):
+        if err == 'slow_down':
+            code.interval += 5      # Яндекс просит спрашивать реже (RFC 8628): +5 с к паузе
+            return None
+        if err == 'authorization_pending':
             return None
         reason = {'invalid_grant': 'expired', 'access_denied': 'denied'}.get(err, 'other')
         raise LoginError(reason, str(d.get('error_description') or err))
 
     async def wait(self, http, code):
         """Ждать подтверждения до истечения кода. Token или LoginError."""
-        interval = max(code.interval, 2)
         while time.time() < code.expires_at:
-            await asyncio.sleep(interval)
+            await asyncio.sleep(max(code.interval, 2))   # interval растёт, если Яндекс просит реже
             token = await self.poll(http, code)
             if token:
                 return token
@@ -213,7 +215,25 @@ class SmartHome:
                 if str(dev.get('type', '')).startswith('devices.types.light')]
 
     async def actions(self, http, per_device):
-        """per_device: {device_id: [действия]}."""
+        """per_device: {device_id: [действия]}. Возвращает {device_id: код ошибки} для устройств,
+        которые не выполнили команду (например, 'DEVICE_UNREACHABLE' — лампа без сети или обесточена).
+        Пустой словарь — всё выполнено. Яндекс отвечает «ok» на весь запрос, даже когда часть ламп
+        не послушалась, поэтому ошибки по каждой лампе нужно смотреть здесь."""
         body = {'devices': [{'id': k, 'actions': v} for k, v in per_device.items() if v]}
-        if body['devices']:
-            await self._call(http, 'POST', '/v1.0/devices/actions', body)
+        if not body['devices']:
+            return {}
+        d = await self._call(http, 'POST', '/v1.0/devices/actions', body)
+        return _action_errors(d)
+
+
+def _action_errors(d):
+    """{device_id: код ошибки} из ответа на /devices/actions."""
+    failed = {}
+    for dev in d.get('devices') or []:
+        results = [dev.get('action_result') or {}]
+        results += [(c.get('state') or {}).get('action_result') or {} for c in dev.get('capabilities') or []]
+        for res in results:
+            if res.get('status') == 'ERROR':
+                failed[dev.get('id')] = res.get('error_code') or 'ERROR'
+                break
+    return failed

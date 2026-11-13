@@ -49,6 +49,30 @@ class SmartHomeTest(unittest.IsolatedAsyncioTestCase):
         await home.actions(self.http, {l1.id: l1.state, l2.id: l2.state})   # вернуть как было
         self.assertEqual((lamps['lamp-2']['on'], lamps['lamp-2']['temperature_k'], lamps['lamp-1']['brightness']), (False, 3000, 60))
 
+    async def test_unreachable_lamp_is_reported(self):
+        home = SmartHome('AT1', iot=self.url)
+        l1, l2 = await home.lights(self.http)
+        self.app['st']['offline'].add('lamp-2')
+        failed = await home.actions(self.http, {l1.id: light_actions(l1, brightness=30),
+                                                l2.id: light_actions(l2, brightness=30)})
+        self.assertEqual(failed, {'lamp-2': 'DEVICE_UNREACHABLE'})       # Яндекс сказал «ok», а лампа — нет
+        self.assertEqual(self.app['st']['lamps']['lamp-1']['brightness'], 30)
+        self.assertEqual(await home.actions(self.http, {l1.id: light_actions(l1, brightness=40)}), {})
+        self.assertEqual(await home.actions(self.http, {l1.id: []}), {})  # нечего отправлять
+
+    async def test_slow_down_makes_polling_slower(self):
+        await self.runner.cleanup()
+        self.app = fake_yandex.make_app(confirm_after=0, slow_down=1)
+        self.runner = web.AppRunner(self.app)
+        await self.runner.setup()
+        site = web.TCPSite(self.runner, '127.0.0.1', 0)
+        await site.start()
+        login = DeviceLogin('test-client', 'test-secret', oauth=f'http://127.0.0.1:{site._server.sockets[0].getsockname()[1]}')
+        code = await login.start(self.http)
+        code.interval = 0                                   # чтобы проверка шла быстро: 0 → 5 после slow_down
+        self.assertIsNone(await login.poll(self.http, code))
+        self.assertEqual(code.interval, 5)
+
     async def test_refresh_and_auth_error(self):
         token = await self.login.refresh(self.http, 'RT1')
         self.assertEqual(token.access, 'AT2')

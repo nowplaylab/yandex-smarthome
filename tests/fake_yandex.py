@@ -4,8 +4,10 @@ import time
 from aiohttp import web
 
 
-def make_app(confirm_after=1.0, client_id='test-client', client_secret='test-secret'):
-    st = {'code_at': 0, 'log': []}
+def make_app(confirm_after=1.0, client_id='test-client', client_secret='test-secret', slow_down=0):
+    # offline — лампы «без сети»: Яндекс отвечает status ok, но по такой лампе action_result ERROR.
+    # slow_down — сколько первых опросов ответить «спрашивайте реже».
+    st = {'code_at': 0, 'log': [], 'offline': set(), 'slow_down': slow_down, 'polls': []}
     lamps = {
         'lamp-1': {'name': 'Лампочка', 'room': 'r1', 'model': 'hsv', 'on': True, 'hsv': None, 'temperature_k': 4000, 'brightness': 60},
         'lamp-2': {'name': 'Потолок', 'room': 'r2', 'model': None, 'on': False, 'hsv': None, 'temperature_k': 3000, 'brightness': 40},
@@ -28,6 +30,10 @@ def make_app(confirm_after=1.0, client_id='test-client', client_secret='test-sec
         if not client_ok(d):
             return web.json_response({'error': 'invalid_client', 'error_description': 'Wrong client secret'}, status=400)
         if d.get('grant_type') == 'device_code':
+            st['polls'].append(time.time())
+            if st['slow_down'] > 0:
+                st['slow_down'] -= 1
+                return web.json_response({'error': 'slow_down'}, status=400)
             if d.get('code') != 'DC1':
                 return web.json_response({'error': 'invalid_grant'}, status=400)
             if time.time() - st['code_at'] < confirm_after:
@@ -62,7 +68,17 @@ def make_app(confirm_after=1.0, client_id='test-client', client_secret='test-sec
         if not authed(r):
             return web.json_response({'status': 'error', 'message': 'unauthorized'}, status=401)
         body = await r.json()
+        out = []
         for d in body['devices']:
+            if d['id'] in st['offline']:
+                err = {'status': 'ERROR', 'error_code': 'DEVICE_UNREACHABLE', 'error_message': 'устройство недоступно'}
+                out.append({'id': d['id'], 'capabilities': [
+                    {'type': a['type'], 'state': {'instance': a['state']['instance'], 'action_result': err}}
+                    for a in d['actions']]})
+                continue
+            out.append({'id': d['id'], 'capabilities': [
+                {'type': a['type'], 'state': {'instance': a['state']['instance'], 'action_result': {'status': 'DONE'}}}
+                for a in d['actions']]})
             l = lamps[d['id']]
             for a in d['actions']:
                 inst, val = a['state']['instance'], a['state']['value']
@@ -75,7 +91,7 @@ def make_app(confirm_after=1.0, client_id='test-client', client_secret='test-sec
                 elif inst == 'brightness':
                     l['brightness'] = val
         st['log'].append(body)
-        return web.json_response({'status': 'ok', 'devices': []})
+        return web.json_response({'status': 'ok', 'request_id': 'req-1', 'devices': out})
 
     app = web.Application()
     app.add_routes([web.post('/device/code', device_code), web.post('/token', token),
