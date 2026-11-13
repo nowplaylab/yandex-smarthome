@@ -1,6 +1,13 @@
-# yandex-smarthome
+<p align="center"><a href="https://github.com/nowplaylab/yandex-smarthome"><img src="https://raw.githubusercontent.com/nowplaylab/yandex-smarthome/main/docs/banner.png" alt="yandex-smarthome" width="100%"></a></p>
 
-**English** | [Русский](https://github.com/nowplaylab/yandex-smarthome/blob/main/README.ru.md)
+<p align="center"><b>English</b> &nbsp;·&nbsp; <a href="https://github.com/nowplaylab/yandex-smarthome/blob/main/README.ru.md">Русский</a> &nbsp;·&nbsp; <a href="https://pypi.org/project/yandex-smarthome/">PyPI</a></p>
+
+<p align="center">
+<a href="https://pypi.org/project/yandex-smarthome/"><img src="https://img.shields.io/pypi/v/yandex-smarthome?style=flat-square&labelColor=3B3C61&color=772556&label=PyPI" alt="PyPI"></a>
+<a href="https://github.com/nowplaylab/yandex-smarthome/actions/workflows/tests.yml"><img src="https://img.shields.io/github/actions/workflow/status/nowplaylab/yandex-smarthome/tests.yml?branch=main&style=flat-square&labelColor=3B3C61&label=tests" alt="tests"></a>
+<img src="https://img.shields.io/badge/python-3.9+-55507F?style=flat-square&labelColor=3B3C61" alt="Python 3.9+">
+<a href="https://github.com/nowplaylab/yandex-smarthome/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-8B85A7?style=flat-square&labelColor=3B3C61" alt="MIT"></a>
+</p>
 
 Yandex Smart Home (Alice) from Python: **sign in with a code** — the user types it on Yandex's page, your program never sees the password — and control lights: colour, white temperature, brightness, on/off, with a snapshot to put everything back as it was.
 

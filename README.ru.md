@@ -1,6 +1,13 @@
-# yandex-smarthome
+<p align="center"><a href="https://github.com/nowplaylab/yandex-smarthome"><img src="https://raw.githubusercontent.com/nowplaylab/yandex-smarthome/main/docs/banner.png" alt="yandex-smarthome" width="100%"></a></p>
 
-[English](README.md) | **Русский**
+<p align="center"><a href="https://github.com/nowplaylab/yandex-smarthome/blob/main/README.md">English</a> &nbsp;·&nbsp; <b>Русский</b> &nbsp;·&nbsp; <a href="https://pypi.org/project/yandex-smarthome/">PyPI</a></p>
+
+<p align="center">
+<a href="https://pypi.org/project/yandex-smarthome/"><img src="https://img.shields.io/pypi/v/yandex-smarthome?style=flat-square&labelColor=3B3C61&color=772556&label=PyPI" alt="PyPI"></a>
+<a href="https://github.com/nowplaylab/yandex-smarthome/actions/workflows/tests.yml"><img src="https://img.shields.io/github/actions/workflow/status/nowplaylab/yandex-smarthome/tests.yml?branch=main&style=flat-square&labelColor=3B3C61&label=%D1%82%D0%B5%D1%81%D1%82%D1%8B" alt="tests"></a>
+<img src="https://img.shields.io/badge/python-3.9+-55507F?style=flat-square&labelColor=3B3C61" alt="Python 3.9+">
+<a href="https://github.com/nowplaylab/yandex-smarthome/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-8B85A7?style=flat-square&labelColor=3B3C61" alt="MIT"></a>
+</p>
 
 Умный дом Яндекса (Алиса) из Python: **вход по коду** — человек вводит его на странице Яндекса, программа пароль не видит — и управление светом: цвет, оттенок белого, яркость, вкл/выкл, плюс снимок состояния, чтобы вернуть всё как было.
 
